@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: weather-station
+  namespace: weather-lab
+spec:
+  clusterIP: None
+  selector:
+    app: weather-station
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: weather-station
+  namespace: weather-lab
+  labels:
+    app: weather-station
+spec:
+  serviceName: weather-station
+  replicas: 10
+  selector:
+    matchLabels:
+      app: weather-station
+  template:
+    metadata:
+      labels:
+        app: weather-station
+    spec:
+      containers:
+        - name: weather-station
+          image: weather-station:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            # STATION_ID is intentionally NOT set here: entrypoint.sh derives a
+            # stable 1..10 id from the StatefulSet pod ordinal (weather-station-0..9).
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:9092"
+            - name: WEATHER_TOPIC
+              value: "weather-readings"
+            - name: EMIT_INTERVAL_MS
+              value: "1000"

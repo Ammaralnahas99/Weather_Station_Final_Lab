@@ -1,0 +1,100 @@
+services:
+  zookeeper:
+    image: bitnamilegacy/zookeeper:3.9
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo ruok | timeout 2 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/2181'"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  kafka:
+    image: bitnamilegacy/kafka:3.7
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://127.0.0.1:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    ports:
+      - "9093:9093"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "timeout 2 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/9092'"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=weather
+      - POSTGRES_USER=weather
+      - POSTGRES_PASSWORD=weather
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U weather"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  central-station:
+    build: ./central-station
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - WEATHER_TOPIC=weather-readings
+      - RAIN_ALERTS_TOPIC=rain-alerts
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=weather
+      - DB_USER=weather
+      - DB_PASSWORD=weather
+
+  weather-station-1:
+    build: ./weather-station
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - STATION_ID=1
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - WEATHER_TOPIC=weather-readings
+
+  weather-station-2:
+    build: ./weather-station
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - STATION_ID=2
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - WEATHER_TOPIC=weather-readings
+
+  weather-station-3:
+    build: ./weather-station
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - STATION_ID=3
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - WEATHER_TOPIC=weather-readings
+
+volumes:
+  pgdata:
