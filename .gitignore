@@ -5,3 +5,5 @@ target/
 .vscode/
 dependency-reduced-pom.xml
 .claude/
+cloud/*.env
+cloud/*.pem

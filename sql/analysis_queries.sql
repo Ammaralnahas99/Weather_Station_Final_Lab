@@ -1,12 +1,4 @@
--- Weather Stations Monitoring - Historical / Analytical Queries
--- Paste the results of these into the final report (Section E of the assignment).
 
--- =====================================================================
--- 1. Battery status distribution per station
---    Expected: low ~30%, medium ~40%, high ~30% of RECEIVED messages
---    (the drop simulation does not bias battery_status, so the ratio
---    should hold on the messages that actually made it into the DB).
--- =====================================================================
 SELECT
     station_id,
     battery_status,
@@ -26,14 +18,7 @@ GROUP BY battery_status
 ORDER BY battery_status;
 
 
--- =====================================================================
--- 2. Dropped messages per station
---    Since s_no is a per-station auto-increment that the mock station
---    bumps on every SAMPLED reading (dropped or not), MAX(sequence_number)
---    is the number of readings the station believes it produced (expected),
---    while COUNT(*) is the number that actually reached the database
---    (received). The gap approximates the ~10% drop rate.
--- =====================================================================
+
 SELECT
     station_id,
     MAX(sequence_number)                                              AS expected_messages,

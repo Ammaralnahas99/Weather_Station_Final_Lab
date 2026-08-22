@@ -1,0 +1,54 @@
+services:
+  zookeeper:
+    image: bitnamilegacy/zookeeper:3.9
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    healthcheck:
+      test: ["CMD", "bash", "-c", "timeout 2 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/2181'"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  kafka:
+    image: bitnamilegacy/kafka:3.7
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      # Two listeners: INTERNAL for same-host containers (central-station), EXTERNAL
+      # for the remote Weather Stations VM. Without this split, containers on this
+      # host would try to reconnect via the advertised public/private IP and hit
+      # cloud NAT hairpin issues.
+      - KAFKA_CFG_LISTENERS=INTERNAL://0.0.0.0:9093,EXTERNAL://0.0.0.0:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka:9093,EXTERNAL://${KAFKA_ADVERTISED_HOST}:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    ports:
+      - "9092:9092"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "timeout 2 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/9093'"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
+    restart: unless-stopped
+
+  central-station:
+    build: ../central-station
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9093
+      - WEATHER_TOPIC=weather-readings
+      - RAIN_ALERTS_TOPIC=rain-alerts
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_SSLMODE=require
+    restart: unless-stopped

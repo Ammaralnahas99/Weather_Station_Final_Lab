@@ -13,13 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * Mocks a single weather station that samples its sensors every second and
- * publishes a JSON status message to a Kafka topic.
- *
- * Configuration is fully environment-driven so the same image can be reused
- * for all 10 station pods/containers (only STATION_ID changes).
- */
+
 public class WeatherStationApp {
 
     private static final Logger log = LoggerFactory.getLogger(WeatherStationApp.class);

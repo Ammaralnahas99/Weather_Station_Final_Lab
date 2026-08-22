@@ -116,23 +116,15 @@ kubectl -n weather-lab exec -it deploy/postgres -- psql -U weather -d weather \
 
 ## Bonus: Cloud deployment (no Kubernetes)
 
-Not automated by this repo — it requires provisioning real cloud VMs. Outline:
-
-1. **Central Base Station VM**: install Docker, run Zookeeper + Kafka
-   (advertise the VM's public/private IP via `KAFKA_CFG_ADVERTISED_LISTENERS`
-   so remote producers can connect), run `central-station:latest` pointed at
-   `localhost:9092` and at the managed database (below). Open port 9092 to the
-   Weather Stations VM's IP only.
-2. **Weather Stations VM**: install Docker, run 10 containers of
-   `weather-station:latest` with `STATION_ID=1..10` and
-   `KAFKA_BOOTSTRAP_SERVERS=<central-vm-ip>:9092`.
-3. **Managed database (Aiven)**: create a PostgreSQL service, then point the
-   central station at it via `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` /
-   `DB_PASSWORD` environment variables (never hardcoded) and set
-   `DB_SSLMODE=require`.
-4. Capture screenshots/logs of: stations producing, central station
-   consuming + inserting, and a `psql` session against the Aiven database
-   showing row counts — these go in the report's Cloud Deployment section.
+Fully worked out in [cloud/](cloud/): two AWS Free Tier EC2 VMs (one for the
+10 weather stations, one for Zookeeper + Kafka + the central station) plus a
+managed Aiven PostgreSQL database, using dedicated compose files
+([docker-compose.central.yml](cloud/docker-compose.central.yml),
+[docker-compose.stations.yml](cloud/docker-compose.stations.yml)) and a VM
+bootstrap script ([bootstrap.sh](cloud/bootstrap.sh)). See
+[cloud/README.md](cloud/README.md) for the full step-by-step (AWS console
+steps, Aiven setup, security groups, verification commands, and what to
+screenshot for the report).
 
 ## Report checklist
 
