@@ -3,6 +3,9 @@ services:
     image: bitnamilegacy/zookeeper:3.9
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+      # Default JVM heap (1G) doesn't fit a 1GB free-tier VM alongside Kafka
+      # and central-station; cap it so all three JVMs fit together.
+      - ZOO_HEAP_SIZE=160
     healthcheck:
       test: ["CMD", "bash", "-c", "timeout 2 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/2181'"]
       interval: 5s
@@ -26,6 +29,8 @@ services:
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      # Bitnami's default Kafka heap (1G) alone exceeds a t3.micro's total RAM.
+      - KAFKA_HEAP_OPTS=-Xmx350m -Xms350m
     ports:
       - "9092:9092"
     healthcheck:
@@ -51,4 +56,5 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_SSLMODE=require
+      - JAVA_TOOL_OPTIONS=-Xmx224m
     restart: unless-stopped
