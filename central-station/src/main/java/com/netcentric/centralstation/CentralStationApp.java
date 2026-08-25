@@ -8,16 +8,6 @@ import com.netcentric.centralstation.streams.RainDetectionTopology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Entry point for the Central Base Station.
- *
- * Wires together:
- *  1. A Kafka Streams topology that detects "raining" conditions (humidity > 70%)
- *     and republishes alerts to a dedicated topic.
- *  2. A Kafka consumer that reads raw weather readings and batch-inserts them
- *     into PostgreSQL.
- *  3. An optional consumer that logs raining alerts.
- */
 public class CentralStationApp {
 
     private static final Logger log = LoggerFactory.getLogger(CentralStationApp.class);

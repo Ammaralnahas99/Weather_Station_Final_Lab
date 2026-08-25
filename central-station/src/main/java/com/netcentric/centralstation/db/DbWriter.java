@@ -11,11 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-/**
- * Owns the JDBC connection to PostgreSQL and performs batch inserts of
- * weather readings, as required by the assignment (recommended batch size
- * 5,000 records).
- */
+
 public class DbWriter implements AutoCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(DbWriter.class);
@@ -54,11 +50,7 @@ public class DbWriter implements AutoCloseable {
         ensureSchema();
     }
 
-    /**
-     * Postgres may still be starting up when this service does (container
-     * orchestrators start containers, not readiness), so retry with a fixed
-     * backoff instead of crashing on the first attempt.
-     */
+   
     private static Connection connectWithRetry(DbConfig config) throws SQLException {
         SQLException lastFailure = null;
         for (int attempt = 1; attempt <= MAX_CONNECT_ATTEMPTS; attempt++) {
@@ -86,11 +78,7 @@ public class DbWriter implements AutoCloseable {
         }
     }
 
-    /**
-     * Inserts a batch of readings in a single round trip. On failure the
-     * transaction is rolled back so the caller can retry / not commit Kafka
-     * offsets for this batch.
-     */
+    
     public void insertBatch(List<WeatherStatusMessage> batch) throws SQLException {
         if (batch.isEmpty()) {
             return;

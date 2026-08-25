@@ -12,10 +12,6 @@ public class DbConfig {
         this.password = password;
     }
 
-    /**
-     * All credentials come from the environment (populated from Kubernetes
-     * Secrets or the host shell) so nothing is hardcoded in source control.
-     */
     public static DbConfig fromEnv() {
         String host = getEnv("DB_HOST", "localhost");
         String port = getEnv("DB_PORT", "5432");

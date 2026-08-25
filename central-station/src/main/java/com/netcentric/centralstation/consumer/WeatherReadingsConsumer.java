@@ -17,14 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-/**
- * Consumes raw weather readings from Kafka and persists them to PostgreSQL
- * using batch inserts. Flushes when either the batch reaches
- * {@link #BATCH_SIZE} records or {@link #FLUSH_INTERVAL_MS} elapses,
- * whichever comes first, so low-traffic periods don't stall persistence.
- * Kafka offsets are committed only after a successful DB write (at-least
- * -once delivery; duplicates are absorbed by the DB's ON CONFLICT DO NOTHING).
- */
+
 public class WeatherReadingsConsumer implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(WeatherReadingsConsumer.class);

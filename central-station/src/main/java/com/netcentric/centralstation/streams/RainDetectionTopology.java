@@ -15,11 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-/**
- * Kafka Streams DSL topology that watches the raw weather-readings topic and
- * emits a "raining" alert to a dedicated topic whenever a station reports
- * humidity above 70%.
- */
+
 public class RainDetectionTopology {
 
     private static final Logger log = LoggerFactory.getLogger(RainDetectionTopology.class);

@@ -12,10 +12,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 
-/**
- * Optional consumer that just logs raining alerts produced by the
- * {@link com.netcentric.centralstation.streams.RainDetectionTopology}.
- */
+
 public class RainAlertsConsumer implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(RainAlertsConsumer.class);
